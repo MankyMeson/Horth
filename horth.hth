@@ -1,0 +1,27 @@
+
+-4 6 2
+
+x^2Coeff . dup . xCoeff . 1 cp . Const . 2 cp .
+if
+  dup 4 4 cp * *
+  2 cp dup *
+  >
+then
+  NoSolutions .
+else
+    if
+      dup 4 4 cp * *
+      2 cp dup *
+      ==
+    then
+      1Solution .
+      0 2 cp - 2 2 cp * / .
+    else
+      2Solutions .
+      0 2 cp - 2 2 cp * / dup
+      3 cp 2 ^ 3 cp 6 cp 4 * * - 1 2 / ^ 3 cp 2 * /
+      dup 2 cp + x_1= . .
+      and . x_2= .
+      - .
+    endif
+endif

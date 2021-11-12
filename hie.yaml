@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "Horth:lib"
+
+    - path: "./app/Main.hs"
+      component: "Horth:exe:Horth-exe"
+
+    - path: "./app/Paths_Horth.hs"
+      component: "Horth:exe:Horth-exe"
+
+    - path: "./test"
+      component: "Horth:test:Horth-test"
