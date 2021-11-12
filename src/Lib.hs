@@ -3,10 +3,6 @@ module Lib where
 import GHC.Float
 import Data.Maybe
 
-someFunc :: IO ()
-someFunc = do
-    putStrLn "someFunc"
-
 data HorthVal = Word String
               | HorthStr String
               | HorthInt Int
@@ -25,6 +21,13 @@ fltDigits = '.':digits
 -- "Covert" words to be ignored by any function applied to the stack
 horthWords :: [HorthVal]
 horthWords = map Word ["if", "then", "else", "elif", "while", "for", "endif"]
+
+-- operations and the number of arguments they require in the stack (N.B. "cp" requires as many arguments
+-- as the integer it acts upon but this can be implemented later in the evaluation process)
+operations :: [String]
+operations  =                [".",".s","dup","cp","dump","+","-","/","*","^",">","<",">=","<=","==","&&","||","¬"]
+nArgsLookup :: [(String, Int)]
+nArgsLookup = zip operations [1  ,0   ,1    ,1   ,1     ,2  ,2  ,2  ,2  ,2  ,2  ,2  ,2   ,2   ,2   ,2   ,2   ,1  ]
 
 newtype HorthStack = HorthStack [HorthVal] deriving (Show)
 
@@ -51,32 +54,31 @@ stackElem (HorthStack (x:xs)) 0
 stackElem (HorthStack (x:xs)) n
   | x `elem` horthWords = stackElem (HorthStack xs) n
   | otherwise           = stackElem (HorthStack xs) (n-1)
+stackElem (HorthStack []) n = Nil
 
 stackCount :: HorthStack -> Int
-stackCount (HorthStack (x:[]))
+stackCount (HorthStack [x])
   | x `elem` horthWords = 0
   | otherwise           = 1
 stackCount (HorthStack (x:xs))
   | x `elem` horthWords = stackCount (HorthStack xs)
   | otherwise           = 1 + stackCount (HorthStack xs)
+stackCount(HorthStack []) = 0
 
 removeIf :: HorthStack -> HorthStack
 removeIf (HorthStack (x:xs))
-  | x == (Word "if") = HorthStack xs
+  | x == Word "if" = HorthStack xs
   | otherwise        = HorthStack (x:(unStack $ removeIf (HorthStack xs)))
+removeIf (HorthStack []) = HorthStack []
 
 lexer :: String -> String -> [String]
-lexer [] stack = if stack == [] 
-  then
-    []
-  else
-    [reverse stack]
+lexer [] stack = [reverse stack | null stack]
 lexer (x:xs) stack
-  | x == ' ' || x == '\n' = if stack == []
+  | x == ' ' || x == '\n' = if null stack
     then
       lexer xs []
     else
-      [reverse stack] ++ (lexer xs [])
+      reverse stack:lexer xs []
   | otherwise             = lexer xs (x:stack)
 
 
