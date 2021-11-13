@@ -29,13 +29,20 @@ operations  =                [".",".s","dup","cp","dump","+","-","/","*","^",">"
 nArgsLookup :: [(String, Int)]
 nArgsLookup = zip operations [1  ,0   ,1    ,1   ,1     ,2  ,2  ,2  ,2  ,2  ,2  ,2  ,2   ,2   ,2   ,2   ,2   ,1  ]
 
+recurseOnly :: Int -> ((a->a)->(a->a)) -> (a->a)
+recurseOnly n funK = compose (replicate n funK) id
+compose :: [a -> a] -> a -> a
+compose = foldr (.) id
+
+-- recurseUntil :: Bool -> 
+
 newtype HorthStack = HorthStack [HorthVal] deriving (Show)
 
 unStack :: HorthStack -> [HorthVal]
 unStack (HorthStack xs) = xs
 
 pushStack :: HorthVal -> HorthStack -> HorthStack
-pushStack val stack = HorthStack $ val:(unStack stack)
+pushStack val stack = HorthStack $ val:unStack stack
 
 dumpStack :: HorthStack -> HorthStack
 dumpStack (HorthStack []) = HorthStack []
@@ -93,11 +100,15 @@ readHorthVal str
 
 isInt :: String -> Bool
 isInt (x:xs)
-  | x `elem` digits = True && isInt xs
+  | x `elem` digits = isInt xs
   | otherwise       = False
 isInt x = True
 
-isFlt = undefined
+isFlt :: String -> Bool
+isFlt (x:xs)
+  | x `elem` fltDigits = isFlt xs
+  | otherwise = False
+
 
 quote :: HorthVal -> String
 quote x =
