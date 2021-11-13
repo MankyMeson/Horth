@@ -34,8 +34,6 @@ recurseOnly n funK = compose (replicate n funK) id
 compose :: [a -> a] -> a -> a
 compose = foldr (.) id
 
--- recurseUntil :: Bool -> 
-
 newtype HorthStack = HorthStack [HorthVal] deriving (Show)
 
 unStack :: HorthStack -> [HorthVal]
@@ -92,10 +90,11 @@ lexer (x:xs) stack
 readHorthVal :: String -> HorthVal
 readHorthVal str
   | isInt str = HorthInt (read str :: Int)
---  | isFlt str = HorthFlt (read str :: Double)
+  | isFlt str = HorthFlt (read str :: Double)
+  | isStr str = HorthStr (read str :: String)
   | str == "True" || str == "False" = HorthBool (read str :: Bool)
---  | str == "Nil" = Nil
---  | head str == '[' && last str == ']' = undefined
+-- Add List functionality here
+  | str == "Nil" = Nil
   | otherwise = HorthStr str
 
 isInt :: String -> Bool
@@ -105,28 +104,39 @@ isInt (x:xs)
 isInt x = True
 
 isFlt :: String -> Bool
+isFlt [] = False
 isFlt (x:xs)
-  | x `elem` fltDigits = isFlt xs
-  | otherwise = False
+  | x `elem` digits = isFlt xs
+  | x == '.'        = isFlt' xs
+  | otherwise       = False
 
+isFlt' :: String -> Bool
+isFlt' [] = True
+isFlt' (x:xs)
+  | x `elem` digits = isFlt' xs
+  | x == '.'        = False
+  | otherwise       = False
+
+isStr :: String -> Bool
+isStr xs
+  | length xs < 2 = False
+  | otherwise     = (head xs == '\"') && (last xs == '\"')
 
 quote :: HorthVal -> String
 quote x =
   case x of
     Word y      -> show y
-    HorthStr y  -> show y
+    HorthStr y  -> y
     HorthInt y  -> show y
     HorthFlt y  -> show y
     List y      -> "[" ++ quoteList y 
-    HorthBool y -> case y of
-                     True  -> "True"
-                     False -> "False"
+    HorthBool y -> if y then "True" else "False"
     Nil         -> "Type Error"
                 
 quoteList :: [HorthVal] -> String
 quoteList []     = "]"
-quoteList (x:[]) = (quote x) ++ "]"
-quoteList (x:xs) = (quote x) ++ "," ++ (quoteList xs)
+quoteList [x]    = quote x ++ "]"
+quoteList (x:xs) = quote x ++ "," ++ quoteList xs
 
 quoteStack :: HorthStack -> String
 quoteStack stack = "head -> [" ++ quoteList stack'
@@ -259,7 +269,7 @@ eval (x:xs) stack =
       eval xs stack'
     "then" -> do
       -- First check if "if" has been inputted, if not raise parse error
-      if (Word "if") `elem` (unStack stack)
+      if Word "if" `elem` unStack stack
       then do
         -- Check if the most recent element in the stack is a boolean
         let proceed = unBool $ stackElem stack 0
@@ -290,10 +300,10 @@ horthSum x y =
   case x of
     HorthInt x' -> case y of
       HorthInt y' -> HorthInt (x'+y')
-      HorthFlt y' -> HorthFlt ((int2Double x')+y')
+      HorthFlt y' -> HorthFlt (int2Double x' + y')
       y           -> Nil
     HorthFlt x' -> case y of
-      HorthInt y' -> HorthFlt (x'+(int2Double y'))
+      HorthInt y' -> HorthFlt (x'+ int2Double y')
       HorthFlt y' -> HorthFlt (x'+y')
       y           -> Nil
     x           -> Nil
@@ -303,10 +313,10 @@ horthMinus x y =
   case x of
     HorthInt x' -> case y of
       HorthInt y' -> HorthInt (y'-x')
-      HorthFlt y' -> HorthFlt (y'-(int2Double x'))
+      HorthFlt y' -> HorthFlt (y'- int2Double x')
       y           -> Nil
     HorthFlt x' -> case y of
-      HorthInt y' -> HorthFlt ((int2Double y')-x')
+      HorthInt y' -> HorthFlt (int2Double y' -x')
       HorthFlt y' -> HorthFlt (y'-x')
       y           -> Nil
     x           -> Nil
@@ -316,10 +326,10 @@ horthProd x y =
   case x of
     HorthInt x' -> case y of
       HorthInt y' -> HorthInt (y'*x')
-      HorthFlt y' -> HorthFlt (y'*(int2Double x'))
+      HorthFlt y' -> HorthFlt (y'* int2Double x')
       y           -> Nil
     HorthFlt x' -> case y of
-      HorthInt y' -> HorthFlt ((int2Double y')*x')
+      HorthInt y' -> HorthFlt (int2Double y' * x')
       HorthFlt y' -> HorthFlt (y'*x')
       y           -> Nil
     x           -> Nil
