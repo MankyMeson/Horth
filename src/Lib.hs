@@ -1,16 +1,10 @@
 module Lib where
 
+import HorthVal
+import Lexer
 import GHC.Float
 import Data.Maybe
 
-data HorthVal = Word String
-              | HorthStr String
-              | HorthInt Int
-              | HorthFlt Double
-              | List [HorthVal]
-              | HorthBool Bool
-              | Nil
-              deriving (Eq, Show)
 
 digits :: String
 digits = "-0123456789"
@@ -76,16 +70,6 @@ removeIf (HorthStack (x:xs))
   | otherwise        = HorthStack (x:(unStack $ removeIf (HorthStack xs)))
 removeIf (HorthStack []) = HorthStack []
 
-lexer :: String -> String -> [String]
-lexer [] stack = [reverse stack | null stack]
-lexer (x:xs) stack
-  | x == ' ' || x == '\n' = if null stack
-    then
-      lexer xs []
-    else
-      reverse stack:lexer xs []
-  | otherwise             = lexer xs (x:stack)
-
 
 readHorthVal :: String -> HorthVal
 readHorthVal str
@@ -122,22 +106,6 @@ isStr xs
   | length xs < 2 = False
   | otherwise     = (head xs == '\"') && (last xs == '\"')
 
-quote :: HorthVal -> String
-quote x =
-  case x of
-    Word y      -> show y
-    HorthStr y  -> y
-    HorthInt y  -> show y
-    HorthFlt y  -> show y
-    List y      -> "[" ++ quoteList y 
-    HorthBool y -> if y then "True" else "False"
-    Nil         -> "Type Error"
-                
-quoteList :: [HorthVal] -> String
-quoteList []     = "]"
-quoteList [x]    = quote x ++ "]"
-quoteList (x:xs) = quote x ++ "," ++ quoteList xs
-
 quoteStack :: HorthStack -> String
 quoteStack stack = "head -> [" ++ quoteList stack'
   where stack'   = unStack stack
@@ -146,7 +114,7 @@ eval :: [String] -> HorthStack -> IO ()
 eval (x:xs) stack = 
   case x of
     "."  -> do
-      putStrLn $ quote $ head $ unStack stack
+      putStr $ quote $ head $ unStack stack
       let stack' = dumpStack stack
       eval xs stack'
     ".s" -> do
@@ -278,10 +246,10 @@ eval (x:xs) stack =
           -- Check whether to evaluate the 'then' block or the 'else' block
           let stack' = dumpStack $ removeIf stack
           if fromJust proceed
-          then do -- evaluate 'then' block
+          then do -- evaluate 'then' block by removing anything between 'else' and 'endif' inclusive 
             let xs' = removeElseBlock xs False
             eval xs' stack'
-          else do -- evaluate 'else' block
+          else do -- evaluate 'else' block similarly removes anything between 'then' and 'else' inclusive
             let xs' = removeThenBlock xs True
             eval xs' stack'
         else do
@@ -338,11 +306,11 @@ horthDiv :: HorthVal -> HorthVal -> HorthVal
 horthDiv x y =
   case x of
     HorthInt x' -> case y of
-      HorthInt y' -> HorthFlt ((int2Double y')/(int2Double x'))
-      HorthFlt y' -> HorthFlt (y'/(int2Double x'))
+      HorthInt y' -> HorthFlt (int2Double y' / int2Double x')
+      HorthFlt y' -> HorthFlt (y'/ int2Double x')
       y           -> Nil
     HorthFlt x' -> case y of
-      HorthInt y' -> HorthFlt ((int2Double y')/x')
+      HorthInt y' -> HorthFlt (int2Double y' / x')
       HorthFlt y' -> HorthFlt (y'/x')
       y           -> Nil
     x           -> Nil
@@ -352,10 +320,10 @@ horthPow x y =
   case x of
     HorthInt x' -> case y of
       HorthInt y' -> HorthInt (y'^x')
-      HorthFlt y' -> HorthFlt (y'**(int2Double x'))
+      HorthFlt y' -> HorthFlt (y'**int2Double x')
       y           -> Nil
     HorthFlt x' -> case y of
-      HorthInt y' -> HorthFlt ((int2Double y')**x')
+      HorthInt y' -> HorthFlt (int2Double y'**x')
       HorthFlt y' -> HorthFlt (y'**x')
       y           -> Nil
     x           -> Nil
@@ -406,15 +374,16 @@ unBool x = Nothing
 removeElseBlock :: [String] -> Bool -> [String]
 removeElseBlock (x:xs) False
   | x == "else"  = removeElseBlock xs True
-  | otherwise    = x:(removeElseBlock xs False)
+  | otherwise    = x : removeElseBlock xs False
 removeElseBlock (x:xs) True
   | x == "endif" = xs
   | otherwise    = removeElseBlock xs True
+removeElseBlock [] bool = []
 
 removeThenBlock :: [String] -> Bool -> [String]
 removeThenBlock (x:xs) False
   | x == "then"  = removeThenBlock xs True
-  | otherwise    = x:(removeThenBlock xs False)
+  | otherwise    = x : removeThenBlock xs False
 removeThenBlock (x:xs) True
   | x == "else"  = xs
   | otherwise    = removeThenBlock xs True

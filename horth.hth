@@ -1,27 +1,27 @@
 
 -4 6 2
 
-"x^2Coeff" . dup . "xCoeff" . 1 cp . "Const" . 2 cp .
+"x^2 Coeff: " . dup . ", x Coeff: " . 1 cp . ", Const: " . 2 cp .
 if
   dup 4 4 cp * *
   2 cp dup *
   >
 then
-  "NoSolutions:" .
+  "\nNo Solutions" .
 else
     if
       dup 4 4 cp * *
       2 cp dup *
       ==
     then
-      "1Solution:" .
+      "\n1 Solution:\n" .
       0 2 cp - 2 2 cp * / .
     else
-      "2Solutions:" .
+      "\n2 Solutions:\n" .
       0 2 cp - 2 2 cp * / dup
       3 cp 2 ^ 3 cp 6 cp 4 * * - 1 2 / ^ 3 cp 2 * /
-      dup 2 cp + x_1= . .
-      "and" . x_2= .
+      dup 2 cp + "    x1 = " . .
+      "\nand " . "x2 = " .
       - .
     endif
 endif

@@ -5,7 +5,7 @@
 ? /home/doyle/Documents/HaskellProjects/Horth/.stack-work/dist/x86_64-linux-tinfo6/Cabal-3.2.1.0/build/Horth-exe/autogen/cabal_macros.h
 : hash: d9d5089979d06eef12236e13e66c330b34356ec7b4ac442f54f7e1c10b07e915
 /home/doyle/Documents/HaskellProjects/Horth/Horth.cabal:
-  hash: 2337656bef19eb536af7dd82c955444c92ea490b10990eae813a6bc0c1ff89e9
+  hash: adeb280a5e5962c24f32753cd3ae37b9f3ac1262211ba2b59cd63362c57f0cc7
 /home/doyle/Documents/HaskellProjects/Horth/package.yaml:
   hash: 260d79a7cbdab023b12ebf188f924ac9722f7496a68d121e67e6d800d70ec658
 /home/doyle/Documents/HaskellProjects/Horth/README.md:
@@ -15,4 +15,4 @@
 /home/doyle/Documents/HaskellProjects/Horth/ChangeLog.md:
   hash: 8e056c3cc016a11f81ee6555d0b312e25e2f45da9f6136217cd9b4eae1723c6f
 /home/doyle/Documents/HaskellProjects/Horth/app/Main.hs:
-  hash: 71d94931985b2acd4256913d51d8c67a72ead45ebacf2d7dff5a3ffced3520e4
+  hash: f989d9415e7271356f41187cb5d2620e34cc79837e7112c2ec57cf85a0228f25

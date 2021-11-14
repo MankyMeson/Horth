@@ -1,17 +1,21 @@
 /home/doyle/Documents/HaskellProjects/Horth/src/Lib.hs:
-  hash: 271bda9f72afb8f9c5fcdc357a8f3da0338efe790d06890e3d905f8a8705275d
+  hash: 8f1d3571712d5616588e4a9749498dce9dbda9bd9929a684de4d263fefc23f02
 /home/doyle/.stack/programs/x86_64-linux/ghc-tinfo6-8.10.7/lib/ghc-8.10.7/include/ghcversion.h:
   hash: c013160c9aa8a98f4638616496dce720c23ceca8ef9d6b3212b654642fbda5e4
 /home/doyle/Documents/HaskellProjects/Horth/Horth.cabal:
-  hash: 2337656bef19eb536af7dd82c955444c92ea490b10990eae813a6bc0c1ff89e9
+  hash: adeb280a5e5962c24f32753cd3ae37b9f3ac1262211ba2b59cd63362c57f0cc7
 /home/doyle/Documents/HaskellProjects/Horth/package.yaml:
   hash: 260d79a7cbdab023b12ebf188f924ac9722f7496a68d121e67e6d800d70ec658
 /home/doyle/Documents/HaskellProjects/Horth/README.md:
   hash: a8a5d3cc267cc7af0521d6f0d199c901c527fc58ffb9d5c0e1325d09cff01f4f
 /usr/include/stdc-predef.h:
   hash: 38bac01c137da3ec6623c5166d420cd0bdee18e1d6605921f138f74ef902f102
+/home/doyle/Documents/HaskellProjects/Horth/src/HorthVal.hs:
+  hash: 6d6f210289f63672388823bd870695514278d73ec9be18b290668a098b1e93ca
 /home/doyle/Documents/HaskellProjects/Horth/ChangeLog.md:
   hash: 8e056c3cc016a11f81ee6555d0b312e25e2f45da9f6136217cd9b4eae1723c6f
+/home/doyle/Documents/HaskellProjects/Horth/src/Lexer.hs:
+  hash: 5995ed63bdf60bbe173c797047e5586348dcd79590b262f7a3ecebafddc6bc1b
 /home/doyle/Documents/HaskellProjects/Horth/.stack-work/dist/x86_64-linux-tinfo6/Cabal-3.2.1.0/build/autogen/cabal_macros.h:
   hash: b6dd794a2ba2fa877bc9bdb64776ed96cfd1b01e09d7c8c642495803f577c236
 /home/doyle/Documents/HaskellProjects/Horth/.stack-work/dist/x86_64-linux-tinfo6/Cabal-3.2.1.0/build/autogen/Paths_Horth.hs:
