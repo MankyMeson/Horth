@@ -19,9 +19,9 @@ horthWords = map Word ["if", "then", "else", "elif", "while", "for", "endif"]
 -- operations and the number of arguments they require in the stack (N.B. "cp" requires as many arguments
 -- as the integer it acts upon but this can be implemented later in the evaluation process)
 operations :: [String]
-operations  =                [".",".s","dup","cp","dump","+","-","/","*","^",">","<",">=","<=","==","&&","||","¬"]
+operations  =                [".",".s","dup","cp","dump","+","-","/","*","^",">","<",">=","<=","==","&&","||","¬","if","then","else","endif"]
 nArgsLookup :: [(String, Int)]
-nArgsLookup = zip operations [1  ,0   ,1    ,1   ,1     ,2  ,2  ,2  ,2  ,2  ,2  ,2  ,2   ,2   ,2   ,2   ,2   ,1  ]
+nArgsLookup = zip operations [1  ,0   ,1    ,1   ,1     ,2  ,2  ,2  ,2  ,2  ,2  ,2  ,2   ,2   ,2   ,2   ,2   ,1  ,0   ,0     ,0     ,0      ]
 
 recurseOnly :: Int -> ((a->a)->(a->a)) -> (a->a)
 recurseOnly n funK = compose (replicate n funK) id
@@ -39,7 +39,7 @@ pushStack val stack = HorthStack $ val:unStack stack
 dumpStack :: HorthStack -> HorthStack
 dumpStack (HorthStack []) = HorthStack []
 dumpStack (HorthStack (x:xs))
-  | x `elem` horthWords = HorthStack $ x:(unStack $ dumpStack (HorthStack xs))
+  | x `elem` horthWords = HorthStack (x:unStack (dumpStack $ HorthStack xs))
   | otherwise           = HorthStack xs
 
 copyElem :: HorthStack -> HorthStack
@@ -67,7 +67,7 @@ stackCount(HorthStack []) = 0
 removeIf :: HorthStack -> HorthStack
 removeIf (HorthStack (x:xs))
   | x == Word "if" = HorthStack xs
-  | otherwise        = HorthStack (x:(unStack $ removeIf (HorthStack xs)))
+  | otherwise        = HorthStack (x:unStack (removeIf $ HorthStack xs))
 removeIf (HorthStack []) = HorthStack []
 
 
@@ -111,156 +111,107 @@ quoteStack stack = "head -> [" ++ quoteList stack'
   where stack'   = unStack stack
 
 eval :: [String] -> HorthStack -> IO ()
-eval (x:xs) stack = 
-  case x of
-    "."  -> do
-      putStr $ quote $ head $ unStack stack
-      let stack' = dumpStack stack
-      eval xs stack'
-    ".s" -> do
-      putStrLn $ quoteStack stack
-      eval xs stack
-    "dup" -> do
-      let stack' = pushStack (stackElem stack 0) stack
-      eval xs stack'
-    "cp" -> if stackCount stack > 0
-      then do
-        let stack' = copyElem stack
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "dump" -> if stackCount stack > 0
-      then eval xs (dumpStack stack)
-      else putStrLn "Error: Stack Underflow"
-    "+"  -> if stackCount stack > 1 
-      then do
-        let sum    = horthSum (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack sum (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else putStrLn "Error: Stack Underflow"
-    "-"  -> if stackCount stack > 1
-      then do
-        let sum    = horthMinus (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack sum (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else putStrLn "Error: Stack Underflow"
-    "*"  -> do
-      if stackCount stack > 1
-      then do
-        let prod = horthProd (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack prod (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "/"  -> do
-      if stackCount stack > 1
-      then do
-        let div = horthDiv (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack div (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "^"  -> do
-      if stackCount stack > 1
-      then do
-        let div = horthPow (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack div (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "<" -> do
-      if stackCount stack > 1
-      then do
-        let bool = evalLT (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    ">" -> do
-      if stackCount stack > 1
-      then do
-        let bool = evalGT (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "<=" -> do
-      if stackCount stack > 1
-      then do
-        let bool = evalLEQ (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    ">=" -> do
-      if stackCount stack > 1
-      then do
-        let bool = evalGEQ (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "&&" -> do
-      if stackCount stack> 1
-      then do
-        let bool = evalAnd (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "||" -> do
-      if stackCount stack > 1
-      then do
-        let bool = evalOr (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "¬" -> do
-      if stackCount stack > 0
-      then do
-        let bool = evalNot (stackElem stack 0) 
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "=="-> do
-      if stackCount stack > 1
-      then do
-        let bool = evalEq (stackElem stack 0) (stackElem stack 1)
-        let stack' = pushStack bool (dumpStack $ dumpStack stack)
-        eval xs stack'
-      else do
-        putStrLn "Error: Stack Underflow"
-    "if" -> do
-      let stack' = pushStack (Word "if") stack
-      eval xs stack'
-    "then" -> do
-      -- First check if "if" has been inputted, if not raise parse error
-      if Word "if" `elem` unStack stack
-      then do
-        -- Check if the most recent element in the stack is a boolean
-        let proceed = unBool $ stackElem stack 0
-        if isJust proceed
-        then do
-          -- Check whether to evaluate the 'then' block or the 'else' block
-          let stack' = dumpStack $ removeIf stack
-          if fromJust proceed
-          then do -- evaluate 'then' block by removing anything between 'else' and 'endif' inclusive 
-            let xs' = removeElseBlock xs False
-            eval xs' stack'
-          else do -- evaluate 'else' block similarly removes anything between 'then' and 'else' inclusive
-            let xs' = removeThenBlock xs True
-            eval xs' stack'
-        else do
-          putStrLn "Parse Error: No Boolean detected prior to 'then'"
-      else do
-        putStrLn "Parse Error: Expecting 'if' prior to then"
-    "else" -> eval xs stack
-    "endif" -> eval xs stack
-    x    -> do
+eval (x:xs) stack = do
+  let nArgs = lookup x nArgsLookup
+  if isNothing nArgs
+    then do
       let stack' = pushStack (readHorthVal x) stack
       eval xs stack'
+    else if fromJust nArgs > stackCount stack
+      then putStrLn "Error: Stack Underflow"
+      else do
+        case x of
+          "."     -> do
+            putStr $ quote $ head $ unStack stack
+            let stack' = dumpStack stack
+            eval xs stack'
+          ".s"    -> do
+            putStrLn $ quoteStack stack
+            eval xs stack
+          "dup"   -> do
+            let stack' = pushStack (stackElem stack 0) stack
+            eval xs stack'
+          "cp"    -> do
+            let stack' = copyElem stack
+            eval xs stack'
+          "dump"  -> do
+            eval xs (dumpStack stack)
+          "+"     -> do
+            let sum    = horthSum (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack sum (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "-"     -> do
+            let sum    = horthMinus (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack sum (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "*"     -> do
+            let prod = horthProd (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack prod (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "/"     -> do
+            let div = horthDiv (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack div (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "^"     -> do
+            let div = horthPow (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack div (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "<"     -> do
+            let bool = evalLT (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          ">"     -> do
+            let bool = evalGT (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "<="    -> do
+            let bool = evalLEQ (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          ">="    -> do
+            let bool = evalGEQ (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "&&"    -> do
+            let bool = evalAnd (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "||"    -> do
+            let bool = evalOr (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "¬"     -> do
+            let bool = evalNot (stackElem stack 0)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "=="    -> do
+            let bool = evalEq (stackElem stack 0) (stackElem stack 1)
+            let stack' = pushStack bool (dumpStack $ dumpStack stack)
+            eval xs stack'
+          "if"    -> do
+            let stack' = pushStack (Word "if") stack
+            eval xs stack'
+          "then"  -> do -- First check if "if" has been inputted, if not raise parse error
+            if Word "if" `elem` unStack stack
+            then do -- Check if the most recent element in the stack is a boolean
+              let proceed = unBool $ stackElem stack 0
+              if isJust proceed
+              then do -- Check whether to evaluate the 'then' block or the 'else' block
+                let stack' = dumpStack $ removeIf stack
+                if fromJust proceed
+                then do -- evaluate 'then' block by removing anything between 'else' and 'endif' inclusive 
+                  let xs' = removeElseBlock xs False
+                  eval xs' stack'
+                else do -- evaluate 'else' block similarly removes anything between 'then' and 'else' inclusive
+                  let xs' = removeThenBlock xs True
+                  eval xs' stack'
+              else do
+                putStrLn "Parse Error: No Boolean detected prior to 'then'"
+            else do
+              putStrLn "Parse Error: Expecting 'if' prior to then"
+          "else"  -> eval xs stack
+          "endif" -> eval xs stack
+          x       -> putStrLn "Function is either erroneous or WIP"
 eval [] stack = putStr "\n"
 
 horthSum :: HorthVal -> HorthVal -> HorthVal

@@ -1,7 +1,7 @@
 module Lexer where
 
 lexer :: String -> String -> [String]
-lexer [] stack = [reverse stack | null stack]
+lexer [] stack = [reverse stack | not $ null stack]
 lexer ('\"':xs) stack = lexStr xs $ '\"':stack
 lexer (x:xs) stack
   | x == ' ' || x == '\n' = if null stack
@@ -12,4 +12,4 @@ lexer (x:xs) stack
 lexStr :: String -> String -> [String]
 lexStr ('\"':xs) stack = lexer xs $ '\"':stack
 lexStr (x:xs) stack = lexStr xs $ x:stack
-lexStr [] stack     = "Nil":[]
+lexStr [] stack     = ["Nil"]
