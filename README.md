@@ -31,3 +31,7 @@ Anyway here's the current list of functions:
 |`&& \|\|`|2|And and Or respectively, take two booleans and retun another|
 |`¬`|1|Not: takes one boolean and returns the inverse|
 |`if then else endif`|1, before `then`|Conditional routines: takes a boolean before `then` and if true evaluates the block between `then` and `else` otherwise evaluates the latter block between `else` and `endif`|
+
+
+### Planned features:
+There will be plans
