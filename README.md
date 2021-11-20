@@ -34,4 +34,7 @@ Anyway here's the current list of functions:
 
 
 ### Planned features:
-There will be plans
+The first planned feature is Word definition, such that the user can define functions and subroutines (they're kind of the same thing in Horth).  
+The second is some kind of loop, this will likely have a similar syntax to Fortran, in Horth being `i n do (some code) enddo` which will define a word `i` that takes the value of the current iteration and a maximum number of iterations `n` starting at `i=0`. The routine between `do` and `enddo` will then be repeated that many times.  
+The third is lists. I plan for the user to be able to define lists. Each element in these lists must take the same type, their syntax will be as follows: `[12 1 14 0 ]` with any number of spaces between elements. Similarly a list of strings could be `["hello" " "    "world" ]`.  
+The ability to define and import modules will be integral to the eventual use of Horth so this must also be done.  
